@@ -23,7 +23,7 @@ const fetchRates = async () => {
 
     const data = await response.json();
 
-    console.log("Gold rate API response:", data);
+    console.log("FULL GOLD RATE DATA:", data.gold_rates);
 
     if (!data.success || !data.gold_rates) {
       throw new Error("Invalid gold rate response");
