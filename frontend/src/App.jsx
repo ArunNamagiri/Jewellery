@@ -608,7 +608,7 @@ function App() {
               color: "#aaa",
             }}
           >
-            Logout ({user.name})
+            Logout
           </span>
         </nav>
       </header>

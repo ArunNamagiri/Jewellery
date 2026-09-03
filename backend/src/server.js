@@ -21,10 +21,24 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 app.use(helmet());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://saijewellery.vercel.app"
+];
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
+
 app.use(express.json());
 app.use(
     "/uploads",
