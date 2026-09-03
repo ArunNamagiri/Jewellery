@@ -23,15 +23,13 @@ app.use("/api", apiLimiter);
 app.use(helmet());
 
 const allowedOrigins = [
+  "https://saijewellery-frontend-git-main-arunnamagiris-projects.vercel.app",
   "https://jewellery-one-phi.vercel.app",
   "http://localhost:5173",
 ];
-
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin
-      // (Postman, server-to-server, etc.)
       if (!origin) {
         return callback(null, true);
       }
