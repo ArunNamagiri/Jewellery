@@ -26,7 +26,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://saijewellery.vercel.app",
-  "https://jewellery-one-phi.vercel.app"
+  "https://jewellery-one-phi.vercel.app",
+  "https://saijewellery-frontend-git-main-arunnamagiris-projects.vercel.app"
 ];
 app.use(cors({
   origin: function (origin, callback) {
