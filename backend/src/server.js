@@ -6,6 +6,8 @@ const helmet = require("helmet");
 require("dotenv").config();
 const createAdminRouter = require("./routes/admin");
 const app = express();
+
+app.set("trust proxy", 1);
 const rateLimit = require("express-rate-limit");
 
 const apiLimiter = rateLimit({
@@ -29,15 +31,17 @@ const allowedOrigins = [
   "https://jewellery-one-phi.vercel.app",
   "https://saijewellery-frontend-git-main-arunnamagiris-projects.vercel.app"
 ];
+
+
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true
 }));
 
 app.use(express.json());
