@@ -32,10 +32,13 @@ const allowedOrigins = [
   "https://saijewellery-frontend-git-main-arunnamagiris-projects.vercel.app"
 ];
 
-
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (
+            !origin ||
+            allowedOrigins.includes(origin) ||
+            /^https:\/\/.*arunnamagiris-projects\.vercel\.app$/.test(origin)
+        ) {
             callback(null, true);
         } else {
             callback(new Error("Not allowed by CORS"));

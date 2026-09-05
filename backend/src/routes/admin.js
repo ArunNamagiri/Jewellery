@@ -190,15 +190,15 @@ module.exports = function createAdminRouter(pool) {
     const router = express.Router();
 
     const adminLoginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10,
-    standardHeaders: "draft-8",
-    legacyHeaders: false,
-    message: {
-        success: false,
-        message: "Too many login attempts. Please try again later.",
-    },
-});
+        windowMs: 15 * 60 * 1000,
+        limit: 10,
+        standardHeaders: "draft-8",
+        legacyHeaders: false,
+        message: {
+            success: false,
+            message: "Too many login attempts. Please try again later.",
+        },
+    });
 
     // ============================================================
     // LOGIN
@@ -216,6 +216,13 @@ module.exports = function createAdminRouter(pool) {
 
             const expectedUsername = process.env.ADMIN_USERNAME;
             const expectedHash = process.env.ADMIN_PASSWORD_HASH;
+
+            console.log("ADMIN DEBUG:", {
+                usernameReceived: username,
+                usernameExpected: expectedUsername,
+                hashConfigured: Boolean(expectedHash),
+                hashLength: expectedHash ? expectedHash.length : 0,
+            });
 
             if (!expectedUsername || !expectedHash) {
                 console.error(
@@ -308,24 +315,24 @@ module.exports = function createAdminRouter(pool) {
     router.post(
         "/products",
         requireAdminAuth,
-       upload.array("images", 8), 
+        upload.array("images", 8),
         async (req, res) => {
-        const client = await pool.connect();
+            const client = await pool.connect();
 
-       try {
-    await validateUploadedImages(req.files);
+            try {
+                await validateUploadedImages(req.files);
 
-    const validationErrors = validateProductInput(req.body);
+                const validationErrors = validateProductInput(req.body);
 
-    if (validationErrors.length > 0) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid product data",
-            errors: validationErrors,
-        });
-    }
+                if (validationErrors.length > 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Invalid product data",
+                        errors: validationErrors,
+                    });
+                }
 
-          const {
+                const {
                     name,
                     category,
                     description,
@@ -412,12 +419,12 @@ module.exports = function createAdminRouter(pool) {
         requireAdminAuth,
         upload.array("images", 8),
         async (req, res) => {
-        const client = await pool.connect();
+            const client = await pool.connect();
 
-        try {
-            await validateUploadedImages(req.files);
+            try {
+                await validateUploadedImages(req.files);
 
-            const id = Number(req.params.id);
+                const id = Number(req.params.id);
 
                 if (!Number.isInteger(id)) {
                     return res.status(400).json({
@@ -592,10 +599,10 @@ module.exports = function createAdminRouter(pool) {
                 });
             }
 
-           for (const row of imagesResult.rows) {
-             if (row.storage_path) {
-                 await deleteFromSupabase(row.storage_path);
-                 }
+            for (const row of imagesResult.rows) {
+                if (row.storage_path) {
+                    await deleteFromSupabase(row.storage_path);
+                }
             }
 
             res.json({ success: true });
@@ -683,53 +690,53 @@ module.exports = function createAdminRouter(pool) {
     // HELPER — upload files to Cloudinary + insert product_images rows
     // ============================================================
     async function uploadProductImages(client, productId, files) {
-    if (!files || files.length === 0) {
-        return [];
-    }
+        if (!files || files.length === 0) {
+            return [];
+        }
 
-    if (!isSupabaseConfigured) {
-        console.error(
-            "Supabase Storage is not configured — skipping image upload."
-        );
-        return [];
-    }
+        if (!isSupabaseConfigured) {
+            console.error(
+                "Supabase Storage is not configured — skipping image upload."
+            );
+            return [];
+        }
 
-    const existingCountResult = await client.query(
-        `SELECT COUNT(*)::int AS count
+        const existingCountResult = await client.query(
+            `SELECT COUNT(*)::int AS count
          FROM product_images
          WHERE product_id = $1`,
-        [productId]
-    );
-
-    let sortOrder = existingCountResult.rows[0].count;
-
-    const inserted = [];
-
-    for (const file of files) {
-        const { url, path } = await uploadBufferToSupabase(
-            file.buffer,
-            file.originalname,
-            `products/${productId}`
+            [productId]
         );
 
-        const result = await client.query(
-            `
+        let sortOrder = existingCountResult.rows[0].count;
+
+        const inserted = [];
+
+        for (const file of files) {
+            const { url, path } = await uploadBufferToSupabase(
+                file.buffer,
+                file.originalname,
+                `products/${productId}`
+            );
+
+            const result = await client.query(
+                `
             INSERT INTO product_images
                 (product_id, image_url, storage_path, sort_order)
             VALUES
                 ($1, $2, $3, $4)
             RETURNING id, image_url, storage_path, sort_order
             `,
-            [productId, url, path, sortOrder]
-        );
+                [productId, url, path, sortOrder]
+            );
 
-        inserted.push(result.rows[0]);
+            inserted.push(result.rows[0]);
 
-        sortOrder++;
+            sortOrder++;
+        }
+
+        return inserted;
     }
 
-       return inserted;
-  }
-
-  return router;
+    return router;
 };
